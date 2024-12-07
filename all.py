@@ -3,6 +3,7 @@ from transformers import BertTokenizer, BertForQuestionAnswering, AdamW
 from datasets import load_dataset
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import precision_score, recall_score, f1_score
+from datasets import load_metric
 
 # Step 1: Load the SQuAD 1.1 dataset
 dataset = load_dataset("squad")
@@ -110,7 +111,7 @@ print(device)
 model.to(device)
 
 # Step 8: Training loop
-epochs = 100
+epochs = 18
 for epoch in range(epochs):
     model.train()
     total_loss = 0
@@ -138,26 +139,44 @@ for epoch in range(epochs):
     print(f"Epoch {epoch + 1}, Loss: {total_loss / len(train_loader)}")
 
 
-# Step 9: Evaluation loop
+
+# Load the metric for Exact Match (EM)
+metric = load_metric("squad")
+
 model.eval()
-y_true = []
-y_pred = []
+all_predictions = []
+all_references = []
 
-for batch in eval_loader:
-    input_ids, attention_mask, start_positions, end_positions = [b.to(device) for b in batch]
+with torch.no_grad():
+    for batch in eval_loader:
+        input_ids, attention_mask, start_positions, end_positions = [b.to(device) for b in batch]
 
-    with torch.no_grad():
+        # Forward pass
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        start_preds = torch.argmax(outputs.start_logits, dim=-1)
-        end_preds = torch.argmax(outputs.end_logits, dim=-1)
+        start_logits = outputs.start_logits
+        end_logits = outputs.end_logits
 
-    y_true.extend(list(zip(start_positions.cpu().numpy(), end_positions.cpu().numpy())))
-    y_pred.extend(list(zip(start_preds.cpu().numpy(), end_preds.cpu().numpy())))
+        # Convert logits to predictions
+        start_predictions = torch.argmax(start_logits, dim=1)
+        end_predictions = torch.argmax(end_logits, dim=1)
 
-# Step 10: Compute Exact Match (EM) and F1 Scores
-def compute_metrics(y_true, y_pred):
-    exact_match = sum([1 if pred == true else 0 for pred, true in zip(y_pred, y_true)]) / len(y_true)
-    print(f"Exact Match (EM): {exact_match:.4f}")
-    # Add F1 calculation if needed
+        for i in range(input_ids.size(0)):
+            # Convert token indices back to text
+            input_id_list = input_ids[i].tolist()
+            pred_start = start_predictions[i].item()
+            pred_end = end_predictions[i].item()
 
-compute_metrics(y_true, y_pred)
+            predicted_answer = tokenizer.decode(input_id_list[pred_start:pred_end + 1], skip_special_tokens=True)
+            
+            # Ground truth answers
+            example = dataset["validation"][i]
+            references = example["answers"]["text"]
+
+            all_predictions.append(predicted_answer)
+            all_references.append(references)
+
+# Compute Exact Match (EM)
+results = metric.compute(predictions=all_predictions, references=all_references)
+exact_match = results["exact_match"]
+
+print(f"Exact Match (EM) Score: {exact_match:.2f}")
