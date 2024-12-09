@@ -1,19 +1,26 @@
-cuda
-Epoch 1, Loss: 1.3138031730993562
-Epoch 2, Loss: 0.8171812800958836
-Epoch 3, Loss: 0.5952336916761611
-Epoch 4, Loss: 0.45590735450467795
-Epoch 5, Loss: 0.3596002077783116
-Epoch 6, Loss: 0.2929706242233084
-Epoch 7, Loss: 0.24745723567948488
-Epoch 8, Loss: 0.21233558604760022
-Epoch 9, Loss: 0.1887402808744465
-Epoch 10, Loss: 0.17552475639568943
-Epoch 11, Loss: 0.15842682811084507
-Epoch 12, Loss: 0.14609797849912703
-Epoch 13, Loss: 0.1406701745442422
-Epoch 14, Loss: 0.13092291656714597
-Epoch 15, Loss: 0.12349803752632012
-Epoch 16, Loss: 0.11555342462540022
-Epoch 17, Loss: 0.11104339924567944
-Epoch 18, Loss: 0.11303159248963478
+lized: ['qa_outputs.bias', 'qa_outputs.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+/home/mlyang721/miniconda3/envs/fast/lib/python3.12/site-packages/transformers/optimization.py:591: FutureWarning: This implementation of AdamW is deprecated and will be removed in a future version. Use the PyTorch implementation torch.optim.AdamW instead, or set `no_deprecation_warning=True` to disable this warning
+  warnings.warn(
+Epoch 1, Loss: 1.782008908043018
+Epoch 2, Loss: 0.9614471887922011
+Epoch 3, Loss: 0.7295789163925744
+Epoch 4, Loss: 0.5667159475515343
+Epoch 5, Loss: 0.4401640923037005
+Epoch 6, Loss: 0.3466440382806552
+Epoch 7, Loss: 0.2645653372985779
+Epoch 8, Loss: 0.21186705282485555
+Epoch 9, Loss: 0.1682672198065099
+Epoch 10, Loss: 0.1393076069868369
+Epoch 11, Loss: 0.11447386405931387
+Epoch 12, Loss: 0.10180156916982866
+Epoch 13, Loss: 0.08425658955265676
+Epoch 14, Loss: 0.0760596352225611
+Epoch 15, Loss: 0.06949382826599772
+Epoch 16, Loss: 0.06451060710679417
+Epoch 17, Loss: 0.06231471071978008
+Epoch 18, Loss: 0.055668731887604114
+Model saved to ./bert_qa_model
+
+Exact Match (EM) Score: 66.04
+F1 Score: 77.08
