@@ -82,8 +82,8 @@ def create_tensor_dataset(tokenized_data):
     return TensorDataset(
         torch.tensor(tokenized_data["input_ids"], dtype=torch.long),
         torch.tensor(tokenized_data["attention_mask"], dtype=torch.long),
-        torch.tensor(tokenized_data["start_positions"], dtype=torch.long),
-        torch.tensor(tokenized_data["end_positions"], dtype=torch.long)
+        torch.tensor(tokenized_data["START"], dtype=torch.long),
+        torch.tensor(tokenized_data["END"], dtype=torch.long)
     )
 
 train_dataset = create_tensor_dataset(tokenized_squad["train"])
