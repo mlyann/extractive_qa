@@ -5,7 +5,6 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import precision_score, recall_score, f1_score
 from datasets import load_metric
 
-# Step 1: Load the SQuAD 1.1 dataset
 dataset = load_dataset("squad")
 
 from transformers import BertTokenizerFast, BertForQuestionAnswering
