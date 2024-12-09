@@ -18,8 +18,6 @@ model = BertForQuestionAnswering.from_pretrained(model_name)
 
 # Note: Compare the scores with Table 5 in the SQuAD 1.1 paper and include your observations in the notebook.
 
-
-# Step 3: Data Preparation
 def prepare_features(examples):
     """
     Tokenize the dataset and map answers to start and end positions.
@@ -37,8 +35,8 @@ def prepare_features(examples):
     sample_mapping = tokenized_examples.pop("overflow_to_sample_mapping")
     offset_mapping = tokenized_examples.pop("offset_mapping")
 
-    tokenized_examples["start_positions"] = []
-    tokenized_examples["end_positions"] = []
+    tokenized_examples["START"] = []
+    tokenized_examples["END"] = []
 
     for i, offsets in enumerate(offset_mapping):
         input_ids = tokenized_examples["input_ids"][i]
@@ -49,8 +47,8 @@ def prepare_features(examples):
         answers = examples["answers"][sample_index]
 
         if len(answers["answer_start"]) == 0:
-            tokenized_examples["start_positions"].append(cls_index)
-            tokenized_examples["end_positions"].append(cls_index)
+            tokenized_examples["START"].append(cls_index)
+            tokenized_examples["END"].append(cls_index)
         else:
             start_char = answers["answer_start"][0]
             end_char = start_char + len(answers["text"][0])
@@ -66,13 +64,13 @@ def prepare_features(examples):
             if offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char:
                 while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
                     token_start_index += 1
-                tokenized_examples["start_positions"].append(token_start_index - 1)
+                tokenized_examples["START"].append(token_start_index - 1)
                 while offsets[token_end_index][1] >= end_char:
                     token_end_index -= 1
-                tokenized_examples["end_positions"].append(token_end_index + 1)
+                tokenized_examples["END"].append(token_end_index + 1)
             else:
-                tokenized_examples["start_positions"].append(cls_index)
-                tokenized_examples["end_positions"].append(cls_index)
+                tokenized_examples["START"].append(cls_index)
+                tokenized_examples["END"].append(cls_index)
 
     return tokenized_examples
 
@@ -80,9 +78,6 @@ def prepare_features(examples):
 tokenized_squad = dataset.map(prepare_features, batched=True, remove_columns=dataset["train"].column_names)
 
 
-
-
-# Step 4: Convert tokenized data into PyTorch Tensors
 def create_tensor_dataset(tokenized_data):
     return TensorDataset(
         torch.tensor(tokenized_data["input_ids"], dtype=torch.long),
@@ -98,19 +93,13 @@ eval_dataset = create_tensor_dataset(tokenized_squad["validation"])
 
 
 
-# Step 5: DataLoader setup
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 eval_loader = DataLoader(eval_dataset, batch_size=16)
-
-# Step 6: Optimizer setup
 optimizer = AdamW(model.parameters(), lr=5e-5)
-
-# Step 7: Device configuration
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 model.to(device)
 
-# Step 8: Training loop
 epochs = 18
 for epoch in range(epochs):
     model.train()
@@ -140,7 +129,6 @@ for epoch in range(epochs):
 
 
 
-# Load the metric for Exact Match (EM)
 metric = load_metric("squad")
 
 model.eval()
@@ -175,7 +163,7 @@ with torch.no_grad():
             all_predictions.append(predicted_answer)
             all_references.append(references)
 
-# Compute Exact Match (EM)
+# EM
 results = metric.compute(predictions=all_predictions, references=all_references)
 exact_match = results["exact_match"]
 
